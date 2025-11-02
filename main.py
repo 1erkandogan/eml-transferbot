@@ -34,6 +34,11 @@ async def send_daily_data():
 
 @bot.event
 async def on_ready():
+    print(f"Logged in as {bot.user}")
+
+    # Run once immediately
+    await send_daily_data()
+    
     #scheduler.add_job(send_daily_data, trigger="cron", hour=16, minute=46, second=0)  # adjust time as needed
     scheduler.add_job(send_daily_data, trigger="interval", hours=1, minutes=0, seconds=0)  # adjust time as needed
     scheduler.start()
