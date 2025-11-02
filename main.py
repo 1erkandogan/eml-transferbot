@@ -38,9 +38,9 @@ async def on_ready():
 
     # Run once immediately
     await send_daily_data()
-    
-    #scheduler.add_job(send_daily_data, trigger="cron", hour=16, minute=46, second=0)  # adjust time as needed
-    scheduler.add_job(send_daily_data, trigger="interval", hours=1, minutes=0, seconds=0)  # adjust time as needed
+
+    scheduler.add_job(send_daily_data, trigger="cron", hour=10, minute=0, second=0)  # adjust time as needed
+    #scheduler.add_job(send_daily_data, trigger="interval", hours=1, minutes=0, seconds=0)  # adjust time as needed
     scheduler.start()
 
 

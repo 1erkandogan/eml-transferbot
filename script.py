@@ -33,4 +33,5 @@ def get_data():
     cols = [f"col{i+1}" for i in range(max_cols)] + [f"href{i+1}" for i in range(max_cols)]
     df = pd.DataFrame(data, columns=cols)
 
+    df.to_csv("data.csv", index=False)
     return df
