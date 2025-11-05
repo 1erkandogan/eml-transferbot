@@ -5,3 +5,5 @@ python-dotenv
 requests
 tabulate
 beautifulsoup4
+sqlalchemy
+psycopg2-binary

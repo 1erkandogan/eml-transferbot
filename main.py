@@ -5,7 +5,7 @@ import logging
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from datetime import time
 import os
-from script import get_data  # adjust to your filename
+from script import transfer_table_creator  # adjust to your filename
 
 load_dotenv()
 token = os.getenv('DISCORD_TOKEN')
@@ -26,7 +26,7 @@ async def send_daily_data():
         print("Invalid channel ID.")
         return
 
-    df = get_data()  # your pandas DataFrame
+    df = transfer_table_creator(debug = False, table_name = "transfertable", insert_type="append", ingestion=True, env="Local")  # your pandas DataFrame
     text = df.to_markdown(index=False)
     if len(text) > 1900:  # Discord message limit safeguard
         text = text[:1900] + "\n...(truncated)..."
@@ -39,8 +39,8 @@ async def on_ready():
     # Run once immediately
     await send_daily_data()
 
-    scheduler.add_job(send_daily_data, trigger="cron", hour=10, minute=0, second=0)  # adjust time as needed
-    #scheduler.add_job(send_daily_data, trigger="interval", hours=1, minutes=0, seconds=0)  # adjust time as needed
+    #scheduler.add_job(send_daily_data, trigger="cron", hour=10, minute=0, second=0)  # adjust time as needed
+    scheduler.add_job(send_daily_data, trigger="interval", hours=0, minutes=0, seconds=30)  # adjust time as needed
     scheduler.start()
 
 
