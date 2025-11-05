@@ -4,6 +4,7 @@ import pandas as pd
 from io import StringIO
 import time
 from sqlalchemy import create_engine, text
+from sqlalchemy.exc import OperationalError
 import hashlib
 import os
 from dotenv import load_dotenv
@@ -24,12 +25,14 @@ def add_unique_id(df) -> pd.DataFrame:
 
 def new_transfers_only(df, engine) -> pd.DataFrame:
     """Filter DataFrame to only include new transfers not already in the database."""
+    ensure_table_exists(df, engine, table_name="transfertable")
     existing_ids = pd.read_sql('SELECT "ID" FROM transfertable', engine)["ID"].tolist()
     new_transfers_df = df[~df["ID"].isin(existing_ids)].reset_index(drop=True)
     return new_transfers_df
 
 def overlap(df, engine) -> bool:
     """Return True if any transfer IDs in df already exist in the database."""
+    ensure_table_exists(df, engine, table_name="transfertable")
     existing_ids = pd.read_sql('SELECT "ID" FROM transfertable', engine)["ID"].tolist()
     overlap_exists = df["ID"].isin(existing_ids).any()
     return overlap_exists
@@ -62,7 +65,7 @@ def get_league_data(league_id, league_name, domain, transfer_page, engine, debug
             except:
                 print(f"Could not find last page for league {league_name}, assuming single page.")
                 last_page = page
-
+    
         temp_df = pd.read_html(StringIO(str(table)))[0]
         player_links = [domain + tr.find_all("td")[1].find("a").get("href") for tr in table.find_all("tr")[1:]]
         
@@ -70,14 +73,12 @@ def get_league_data(league_id, league_name, domain, transfer_page, engine, debug
         temp_df.insert(3, "PLAYER_LINK", player_links)
         temp_df["Date"] = pd.to_datetime(temp_df["Date"], format="%d.%m.%Y / %H:%M")
         temp_df = add_unique_id(temp_df)
-
+        process_dataframe(temp_df)
         if overlap(temp_df, engine) and insert_type == "append":
             print(f"Overlap found in league {league_name} on page {page}.")
             temp_df = new_transfers_only(temp_df, engine)
             overlapToggle = True
-
         df = pd.concat([df, temp_df], ignore_index=True)
-
         if overlapToggle:
             break
 
@@ -98,8 +99,14 @@ def process_dataframe(df) -> pd.DataFrame:
 
 def save_to_database(df: pd.DataFrame, engine, table_name = "transfertable", insert_type = "append") -> None:
     """Save DataFrame to database."""
-    print(f"Saving {len(df)} records to database with insert type '{insert_type}'...")
     df.to_sql(table_name, engine, if_exists=insert_type, index=False)
+
+def ensure_table_exists(df, engine, table_name="transfertable"):
+    try:
+        df.head(0).to_sql(table_name, engine, if_exists="fail", index=False)
+    except ValueError:
+        # table already exists
+        pass
 
 def transfer_table_creator(debug = False, table_name = "transfertable", insert_type="append", ingestion=False, env="Local") -> pd.DataFrame:
     """Main function to orchestrate the transfer table creation process."""
@@ -122,15 +129,9 @@ def transfer_table_creator(debug = False, table_name = "transfertable", insert_t
     for league_id, league_name in leagues.items():
         league_df = get_league_data(league_id, league_name, domain, transfer_page, engine, debug, insert_type)
         all_data = pd.concat([all_data, league_df], ignore_index=True)
-    
-    # Process the combined data
-    processed_df = process_dataframe(all_data)
-    
+
     # Save to database if required
     if ingestion and engine is not None:
-        save_to_database(processed_df, engine, table_name= 'transfertable', insert_type = "append")
+        save_to_database(all_data, engine, table_name= 'transfertable', insert_type = insert_type)
     
-    return processed_df
-
-if __name__ == "__main__":
-    transfer_table_creator(debug = True, table_name = "transfertable", insert_type="replace", ingestion=True, env="Local")
+    return all_data
