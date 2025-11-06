@@ -7,10 +7,6 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.exc import OperationalError
 import hashlib
 
-def get_database_url(env="Local", database = None) -> str:
-    """Get database URL based on environment."""
-    return database
-
 def add_unique_id(df) -> pd.DataFrame:
     """Add a unique ID column to the DataFrame based on row values."""
     df = df.copy()
@@ -118,7 +114,7 @@ def transfer_table_creator(debug = False, table_name = "transfertable", insert_t
     }
     
     # Get database connection
-    db_url = get_database_url(env, database)
+    db_url = database
     engine = create_engine(db_url) if ingestion else None
     
     # Fetch and combine data from all leagues
