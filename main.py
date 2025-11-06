@@ -15,6 +15,7 @@ database = os.getenv('DATABASE_URL')
 
 handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
 intents = discord.Intents.default()
+intents.message_content = True
 
 bot = commands.Bot(command_prefix='!', intents=intents)
 
@@ -44,6 +45,11 @@ async def send_daily_data():
             await channel.send(chunk.strip(), suppress_embeds=True)
     else:
         await channel.send(text, suppress_embeds=True)
+
+# Run send_daily data on user command
+@bot.command()
+async def show_transfers(ctx):
+    await send_daily_data()
 
 @bot.event
 async def on_ready():
