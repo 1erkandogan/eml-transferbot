@@ -6,13 +6,10 @@ import time
 from sqlalchemy import create_engine, text
 from sqlalchemy.exc import OperationalError
 import hashlib
-import os
-from dotenv import load_dotenv
 
-def get_database_url(env="Local") -> str:
+def get_database_url(env="Local", database = None) -> str:
     """Get database URL based on environment."""
-    load_dotenv()
-    return os.getenv('DATABASE_URL'+("" if env == "Prod" else '_LOCAL'))
+    return database
 
 def add_unique_id(df) -> pd.DataFrame:
     """Add a unique ID column to the DataFrame based on row values."""
@@ -108,7 +105,7 @@ def ensure_table_exists(df, engine, table_name="transfertable"):
         # table already exists
         pass
 
-def transfer_table_creator(debug = False, table_name = "transfertable", insert_type="append", ingestion=False, env="Local") -> pd.DataFrame:
+def transfer_table_creator(debug = False, table_name = "transfertable", insert_type="append", ingestion=False, env="Local", database = None) -> pd.DataFrame:
     """Main function to orchestrate the transfer table creation process."""
     # Initialize constants
     domain = "https://www.emajorleague.com"
@@ -121,7 +118,7 @@ def transfer_table_creator(debug = False, table_name = "transfertable", insert_t
     }
     
     # Get database connection
-    db_url = get_database_url(env)
+    db_url = get_database_url(env, database)
     engine = create_engine(db_url) if ingestion else None
     
     # Fetch and combine data from all leagues

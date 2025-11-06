@@ -11,6 +11,7 @@ from transfer_message import transfer_message
 load_dotenv()
 token = os.getenv('DISCORD_TOKEN')
 channel_id = int(os.getenv('DISCORD_CHANNEL_ID'))
+database = os.getenv('DATABASE_URL')
 
 handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
 intents = discord.Intents.default()
@@ -26,7 +27,7 @@ async def send_daily_data():
         print("Invalid channel ID.")
         return
 
-    df = transfer_table_creator(debug = False, table_name = "transfertable", insert_type="append", ingestion=True, env="Prod")  # your pandas DataFrame
+    df = transfer_table_creator(debug = False, table_name = "transfertable", insert_type="append", ingestion=True, env="Prod", database = database)  # your pandas DataFrame
     text = transfer_message(df)
     if not text:
         return
