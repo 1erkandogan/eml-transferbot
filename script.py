@@ -101,7 +101,7 @@ def ensure_table_exists(df, engine, table_name="transfertable"):
         # table already exists
         pass
 
-def transfer_table_creator(debug = False, table_name = "transfertable", insert_type="append", ingestion=False, env="Local", database = None) -> pd.DataFrame:
+def transfer_table_creator(debug = False, table_name = "transfertable", insert_type="append", ingestion=False, database = None) -> pd.DataFrame:
     """Main function to orchestrate the transfer table creation process."""
     # Initialize constants
     domain = "https://www.emajorleague.com"
