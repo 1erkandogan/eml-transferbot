@@ -11,7 +11,7 @@ from transfer_message import transfer_message
 load_dotenv()
 token = os.getenv('DISCORD_TOKEN')
 channel_id = int(os.getenv('DISCORD_CHANNEL_ID'))
-database = os.getenv('DATABASE_URL')
+database = os.getenv('DATABASE_URL_LOCAL')
 handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
 intents = discord.Intents.default()
 intents.message_content = True
