@@ -8,3 +8,4 @@ tabulate
 beautifulsoup4
 sqlalchemy
 psycopg2-binary
+html5lib
